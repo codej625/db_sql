@@ -1,42 +1,60 @@
-#JPA SELECT를 구현해보자.
+# JPA SELECT 구현
 
-<br />
-
-```
-
-Under the assumption that the JPA dependency is already added, you can proceed with writing your code.
+<br /><br />
 
 ```
+동작 순서만 확인하는 예시이다.
+접속 데이터베이스는 PostgreSQL이라는 전제로 한다.
+(예시에서는 Service layer를 제외)
+```
+
+<br /><br /><br />
 
 1. gradle
-```gradle
-If the dependency is not already added, add the script below under the Gradle section.
 
+```gradle
+// 의존성 추가
 implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 runtimeOnly 'org.postgresql:postgresql'
 ```
 
-<br />
+<br /><br /><br />
 
 2. yaml
-```yaml
-# database configuration
-spring.datasource.url=jdbc:postgresql://localhost:5432/your_database_name
-spring.datasource.username=your_username
-spring.datasource.password=your_password
-spring.jpa.hibernate.ddl-auto=update
 
-## In the operational phase, prevent schema updates with the following script.
-### spring.jpa.hibernate.ddl-auto=validate
+```yaml
+# Database configuration
+  datasource:
+    url: jdbc:postgresql://192.168.0.152:5432/{database_name}
+    username: {user_name}
+    password: {user_password}
+    driver-class-name: org.postgresql.Driver
+
+  # Jpa
+  jpa:
+    open-in-view: false
+    hibernate:
+      # 스키마를 삭제하고 다시 생성한다.
+      ddl-auto: create
+      # 스키마를 변경하지 않는다.
+      # ddl-auto: none
+      # 스키마를 변경된 엔티티에 맞게 업데이트한다.
+      # ddl-auto: update
+
+    show-sql: true
+    properties:
+      hibernate:
+      format_sql=true:
 ```
 
-<br />
+<br /><br /><br />
 
 3. Entity Class
+
 ```java
 @Entity
-@Table(name = "users")
-public class User {
+@Table(name = {table_name})
+public class {method_name} {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -44,31 +62,33 @@ public class User {
   private String name;
   private String email;
 
-  /* Getters and setters */
+  // Getters and setters
 }
 ```
 
-<br />
+<br /><br /><br />
 
 4. Repository
 ```java
-public interface UserRepository extends JpaRepository<User, Long> {
-  /* If additional query methods are needed, declare them here. */
-}
+public interface {interface_name} extends JpaRepository<User, Long> {}
 ```
 
-<br />
+<br /><br /><br />
 
 5. Controller
 ```java
 @RestController
-public class UserController {
-  @Autowired
-  private UserRepository userRepository;
+public class {controller_name} {
 
-  @GetMapping("/users")
-  public List<User> getUsers() {
-    return userRepository.findAll(); /* Select */
+  @Autowired
+  private {interface_name} {variable_name};
+
+  @GetMapping({path})
+  public ResponseEntity<T> {controller_method_name}() {
+  
+    Entity entity = userRepository.findAll(); // All select
+
+    return new ResponseEntity<>(entity, HttpStatus.OK);
   }
 }
 ```
